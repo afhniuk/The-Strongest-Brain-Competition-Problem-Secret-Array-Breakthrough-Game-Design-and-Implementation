@@ -1,4 +1,4 @@
-﻿/// @file Game.cpp
+/// @file Game.cpp
 /// @brief 游戏主控制类实现
 
 #include "Game.h"
@@ -18,10 +18,10 @@
 #undef max
 #endif
 
-Game::Game(const std::string& dataDir)
-    : scoreManager(dataDir)
-    , questionBank(dataDir)
-    , replayManager(dataDir)
+Game::Game()
+    : scoreManager()
+    , questionBank()
+    , replayManager()
     , isReplayMode(false) {
     gameStartTime = 0;
 }
@@ -36,7 +36,6 @@ void Game::clearScreen() {
 
 void Game::pauseAndWait() {
     std::cout << "\n按回车键继续...";
-    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
     std::cin.get();
 }
 
@@ -76,11 +75,11 @@ void Game::run() {
     std::cout << "\n";
     std::cout << "╔══════════════════════════════════════════════════════════════╗\n";
     std::cout << "║                                                              ║\n";
-    std::cout << "║           《密阵突围》 - Matrix Breakout                    ║\n";
-    std::cout << "║           基于《最强大脑》第13季经典挑战项目                ║\n";
+    std::cout << "║           《密阵突围》 - Matrix Breakout                     ║\n";
+    std::cout << "║           基于《最强大脑》第13季经典挑战项目                 ║\n";
     std::cout << "║                                                              ║\n";
-    std::cout << "║           作者：欧典松  学号：202530902356                  ║\n";
-    std::cout << "║           软件工程（卓越班）                                ║\n";
+    std::cout << "║           作者：欧典松  学号：202530902356                   ║\n";
+    std::cout << "║           软件工程（卓越班）                                 ║\n";
     std::cout << "║                                                              ║\n";
     std::cout << "╚══════════════════════════════════════════════════════════════╝\n";
     pauseAndWait();
@@ -114,12 +113,12 @@ void Game::showMainMenu() {
     std::cout << "║                      主  菜  单                              ║\n";
     std::cout << "╠══════════════════════════════════════════════════════════════╣\n";
     std::cout << "║                                                              ║\n";
-    std::cout << "║  1. 开始新游戏（随机盘面）                                  ║\n";
-    std::cout << "║  2. 选择题库题目                                            ║\n";
-    std::cout << "║  3. 查看排行榜                                              ║\n";
-    std::cout << "║  4. 自定义题目                                              ║\n";
-    std::cout << "║  5. 对局回放                                                ║\n";
-    std::cout << "║  6. 退出游戏                                                ║\n";
+    std::cout << "║  1. 开始新游戏（随机盘面）                                   ║\n";
+    std::cout << "║  2. 选择题库题目                                             ║\n";
+    std::cout << "║  3. 查看排行榜                                               ║\n";
+    std::cout << "║  4. 自定义题目                                               ║\n";
+    std::cout << "║  5. 对局回放                                                 ║\n";
+    std::cout << "║  6. 退出游戏                                                 ║\n";
     std::cout << "║                                                              ║\n";
     std::cout << "╚══════════════════════════════════════════════════════════════╝\n";
     std::cout << "\n";
@@ -157,7 +156,7 @@ void Game::startRandomGame() {
 void Game::startQuestionGame() {
     clearScreen();
     std::cout << "\n=== 选择题库题目 ===\n\n";
-
+    questionBank.loadFromFile();
     questionBank.showQuestionList();
 
     if (questionBank.isEmpty()) {
@@ -256,13 +255,19 @@ void Game::runGameLoop() {
 
     while (!board.isGameOver()) {
         clearScreen();
-        std::cout << "\n=== 密阵突围 ===\n";
-        std::cout << "玩家：" << playerName << " | a=" << board.getA()
-                  << " | 盘面：" << board.getSize() << "x" << board.getSize()
-                  << " | 得分：" << board.getMergeCount()
-                  << " | 操作次数：" << board.getTotalMoves() << "\n\n";
-        std::cout << board.toString(true);
-        std::cout << "\n操作：W=上  S=下  A=左  D=右  Q=退出游戏\n";
+
+        // 使用 stringstream 收集所有输出，一次性输出
+        std::ostringstream oss;
+
+        oss << "\n=== 密阵突围 ===\n";
+        oss << "玩家：" << playerName << " | a=" << board.getA()
+            << " | 盘面：" << board.getSize() << "x" << board.getSize()
+            << " | 得分：" << board.getMergeCount()
+            << " | 操作次数：" << board.getTotalMoves() << "\n\n";
+        oss << board.toString(true);
+        oss << "\n操作：W=上  S=下  A=左  D=右  Q=退出游戏\n";
+
+        std::cout << oss.str();  // 一次性输出
 
         if (!processInput()) break;
     }
@@ -337,23 +342,25 @@ void Game::showGameOver() {
     std::cout << "╔══════════════════════════════════════════════════════════════╗\n";
     std::cout << "║                    游 戏 结 束                               ║\n";
     std::cout << "╠══════════════════════════════════════════════════════════════╣\n";
-    std::cout << "║  玩家名称：" << std::setw(46) << std::left << playerName << "║\n";
-    std::cout << "║  难度系数：a = " << std::setw(44) << std::left << board.getA() << "║\n";
-    std::cout << "║  盘面大小：" << std::setw(46) << std::left
+    std::cout << "║  玩家名称：" << std::setw(50) << std::left << playerName << "║\n";
+    std::cout << "║  难度系数：a = " << std::setw(46) << std::left << board.getA() << "║\n";
+    std::cout << "║  盘面大小：" << std::setw(50) << std::left
               << (std::to_string(board.getSize()) + "x" + std::to_string(board.getSize())) << "║\n";
-    std::cout << "║  用时    ：" << std::setw(44) << std::left
+    std::cout << "║  用时    ：" << std::setw(51) << std::left
               << (std::to_string(elapsedSeconds) + " 秒") << "║\n";
-    std::cout << "║  合并次数：" << std::setw(44) << std::left << board.getMergeCount() << "║\n";
-    std::cout << "║  总操作数：" << std::setw(44) << std::left << board.getTotalMoves() << "║\n";
-    std::cout << "║  得分率  ：" << std::setw(42) << std::left
+    std::cout << "║  合并次数：" << std::setw(50) << std::left << board.getMergeCount() << "║\n";
+    std::cout << "║  总操作数：" << std::setw(50) << std::left << board.getTotalMoves() << "║\n";
+    std::cout << "║  得分率  ：" << std::setw(50) << std::left
               << std::fixed << std::setprecision(3) << record.scoreRate << "║\n";
     std::cout << "╚══════════════════════════════════════════════════════════════╝\n";
 
     scoreManager.addRecord(record);
-    replayManager.saveReplay(currentReplay);
+    
+    if (currentReplay.initialCodes.empty()) {
+        std::cout << "[错误] initialCodes 为空，无法保存回放！\n";
+    }
 
-    std::cout << "\n成绩已保存！\n";
-    std::cout << "回放已保存！\n";
+    replayManager.saveReplay(currentReplay);
 }
 
 void Game::showLeaderboard() {
@@ -389,8 +396,12 @@ void Game::customQuestion() {
     q.aValue = aValue;
     q.description = getStringInput("请输入题目描述：");
 
+    // 确保清空之前的网格数据
+    q.gridData.clear();
+    q.gridData.reserve(size * size);
+
     for (int r = 0; r < size; ++r) {
-        std::cout << "\n--- 第 " << r << " 行 ---\n";
+        std::cout << "\n--- 第 " << r << " 行 (" << size << "列) ---\n";
         for (int c = 0; c < size; ++c) {
             std::string prompt = "  (" + std::to_string(r) + "," + std::to_string(c) + ")：";
             std::string val = getStringInput(prompt);
@@ -400,12 +411,15 @@ void Game::customQuestion() {
                 int number = LetterUtils::randomNumber();
                 q.gridData.push_back(std::string(1, letter) + std::to_string(number));
                 std::cout << "    -> 随机生成：" << letter << number << "\n";
-            } else if (val == ".." || val == "." || val.empty()) {
+            }
+            else if (val == ".." || val == "." || val.empty()) {
                 q.gridData.push_back("..");
-            } else if (val.length() >= 2 && LetterUtils::isValidLetter(val[0])
-                       && val[1] >= '0' && val[1] <= '9') {
+            }
+            else if (val.length() >= 2 && LetterUtils::isValidLetter(val[0])
+                && val[1] >= '0' && val[1] <= '9') {
                 q.gridData.push_back(val.substr(0, 2));
-            } else {
+            }
+            else {
                 std::cout << "格式错误，将随机填充。\n";
                 char letter = LetterUtils::randomLetter();
                 int number = LetterUtils::randomNumber();
@@ -423,6 +437,7 @@ void Game::replayGame() {
     clearScreen();
     std::cout << "\n=== 对局回放 ===\n\n";
 
+    
     replayManager.showReplayList();
 
     if (replayManager.getReplayCount() == 0) {
@@ -441,6 +456,7 @@ void Game::playReplay(int replayIndex) {
     const ReplayRecord* rec = replayManager.getReplayByIndex(replayIndex);
     if (rec == nullptr) {
         std::cout << "回放记录不存在！\n";
+        std::cin.get();
         return;
     }
 
@@ -452,6 +468,7 @@ void Game::playReplay(int replayIndex) {
         board.initBoardFromData(rec->aValue, rec->initialBoard);
     } catch (const std::exception& e) {
         std::cout << "回放初始化失败：" << e.what() << "\n";
+        std::cin.get();
         return;
     }
 
@@ -483,4 +500,5 @@ void Game::playReplay(int replayIndex) {
     std::cout << "最终得分：" << board.getMergeCount() << "\n";
     std::cout << "总步数：" << rec->steps.size() << "\n";
     pauseAndWait();
+    
 }

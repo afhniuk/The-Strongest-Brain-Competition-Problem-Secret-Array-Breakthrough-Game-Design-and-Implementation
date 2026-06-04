@@ -17,30 +17,25 @@ struct Question {
 };
 
 class QuestionBank {
-private:
-    std::string questionsFilePath;
-    std::vector<Question> questions;
-
 public:
-    explicit QuestionBank(const std::string& dataDir);
+    explicit QuestionBank();
 
-    void loadFromFile();
-    void saveToFile();
+    // 不再使用成员变量存储路径，每次动态构建
+    void addQuestion(const Question& q);
+    void showQuestionList() const;
+    const Question* getQuestionById(int id) const;
+    bool isEmpty() const;
 
+    // 获取所有题目（用于遍历）
     const std::vector<Question>& getQuestions() const { return questions; }
 
-    void addQuestion(const Question& q);
-
-    const Question* getQuestionById(int id) const;
-
-    void showQuestionList() const;
-
-    void generateBuiltinQuestions();
-
-    bool isEmpty() const { return questions.empty(); }
+    // 公开的文件操作方法（参考 ScoreManager）
+    void loadFromFile();
+    void saveToFile() const;
 
 private:
-    void ensureDataDir(const std::string& dataDir);
+    std::string getQuestionsFilePath() const;
+    std::vector<Question> questions;
 };
 
 #endif // QUESTIONBANK_H

@@ -16,35 +16,17 @@
 #include <filesystem>
 #include <stdexcept>
 
-std::string getDataDirectory() {
-    std::error_code ec;
-    std::filesystem::path currentPath = std::filesystem::current_path(ec);
-    if (ec) {
-        return "data";
-    }
-
-    std::filesystem::path dataPath = currentPath / "data";
-
-    if (!std::filesystem::exists(dataPath)) {
-        std::filesystem::create_directories(dataPath, ec);
-        if (ec) {
-            std::cerr << "警告：无法创建数据目录 " << dataPath.string() << "\n";
-            return "data";
-        }
-    }
-
-    return dataPath.string();
-}
 
 int main() {
+#ifdef _WIN32
+    system("chcp 65001 > nul");
+#endif
+
     try {
-        std::string dataDir = getDataDirectory();
-        std::cout << "数据存储目录：" << dataDir << "\n";
-
-        Game game(dataDir);
+        Game game;
         game.run();
-
-    } catch (const std::exception& e) {
+    }
+    catch (const std::exception& e) {
         std::cerr << "程序发生异常：" << e.what() << "\n";
         std::cerr << "按回车键退出...";
         std::cin.get();

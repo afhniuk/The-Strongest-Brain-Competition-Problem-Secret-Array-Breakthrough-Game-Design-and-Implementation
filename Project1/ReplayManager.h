@@ -1,4 +1,4 @@
-﻿/// @file ReplayManager.h
+/// @file ReplayManager.h
 /// @brief 回放管理类声明
 
 #ifndef REPLAYMANAGER_H
@@ -35,7 +35,7 @@ private:
     std::vector<ReplayRecord> replays;
 
 public:
-    explicit ReplayManager(const std::string& dataDir);
+    explicit ReplayManager();
 
     void recordStep(ReplayRecord& record, Direction dir, MoveResult result, int mergeCount);
 

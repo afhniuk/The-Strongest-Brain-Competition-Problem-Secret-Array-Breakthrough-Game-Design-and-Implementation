@@ -6,7 +6,6 @@
 
 #include <string>
 #include <vector>
-#include <fstream>
 
 struct ScoreRecord {
     std::string playerName;
@@ -18,30 +17,23 @@ struct ScoreRecord {
 
     void calculateScoreRate() {
         scoreRate = (totalMoves > 0) ?
-                    static_cast<double>(mergeCount) / totalMoves : 0.0;
+            static_cast<double>(mergeCount) / totalMoves : 0.0;
     }
 
     std::string toString() const;
 };
 
 class ScoreManager {
-private:
-    std::string scoresFilePath;
-    std::vector<ScoreRecord> records;
-
 public:
-    explicit ScoreManager(const std::string& dataDir);
+    explicit ScoreManager();
 
     void addRecord(const ScoreRecord& record);
-    void loadFromFile();
-    void saveToFile();
-
-    const std::vector<ScoreRecord>& getRecords() const { return records; }
-
     void showLeaderboard(int filterByA = -1) const;
 
 private:
-    void ensureDataDir(const std::string& dataDir);
+    std::string getScoresFilePath() const;
+    std::vector<ScoreRecord> loadFromFile() const;
+    void saveToFile(const std::vector<ScoreRecord>& records) const;
 };
 
-#endif // SCOREMANAGER_H
+#endif

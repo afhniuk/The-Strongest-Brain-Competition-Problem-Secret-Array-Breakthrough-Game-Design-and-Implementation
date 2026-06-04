@@ -417,12 +417,12 @@ std::string GameBoard::toString(bool highlightControlled) const {
 
     oss << "    ";
     for (int c = 0; c < size; ++c) {
-        oss << "  " << (c < 10 ? " " : "") << c << "  ";
+        oss << "  " << (c < 10 ? " " : "") << c << "   ";
     }
     oss << "\n";
 
     oss << "    +";
-    for (int c = 0; c < size; ++c) oss << "-----+";
+    for (int c = 0; c < size; ++c) oss << "------+";
     oss << "\n";
 
     for (int r = 0; r < size; ++r) {
@@ -442,7 +442,7 @@ std::string GameBoard::toString(bool highlightControlled) const {
                     }
                 }
                 if (isCtrl) {
-                    oss << " *" << g.letter << g.number << "*|";
+                    oss << " *" << g.letter << g.number << "* |";
                 } else {
                     oss << " [" << g.letter << g.number << "] |";
                 }
@@ -450,7 +450,7 @@ std::string GameBoard::toString(bool highlightControlled) const {
         }
         oss << "\n";
         oss << "    +";
-        for (int c = 0; c < size; ++c) oss << "-----+";
+        for (int c = 0; c < size; ++c) oss << "------+";
         oss << "\n";
     }
 

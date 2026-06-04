@@ -23,7 +23,7 @@ private:
     bool isReplayMode;
 
 public:
-    explicit Game(const std::string& dataDir);
+    Game();
 
     void run();
 
