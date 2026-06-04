@@ -66,7 +66,7 @@ public:
     bool isGameOver();
 
     /// @brief 获取盘面的字符串表示
-    std::string toString(bool highlightControlled = true) const;
+    std::string toString(bool highlightControlled = true, bool useColor = false) const;
 
     /// @brief 导出盘面数据
     std::vector<std::string> exportBoardData() const;

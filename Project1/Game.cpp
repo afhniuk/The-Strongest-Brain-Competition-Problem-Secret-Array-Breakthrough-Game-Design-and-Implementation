@@ -15,6 +15,15 @@
 
 #ifdef _WIN32
 #include <windows.h>
+void setColor(WORD color) {
+    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+    SetConsoleTextAttribute(hConsole, color);
+}
+
+void resetColor() {
+    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+    SetConsoleTextAttribute(hConsole, 7);  // 7 = 浅灰色（默认）
+}
 #undef max
 #endif
 
@@ -200,7 +209,7 @@ void Game::selectInitialCodes() {
     std::vector<Position> selectedPositions;
 
     std::cout << "\n请选择 " << aValue << " 个初始操纵代码。\n";
-    std::cout << "当前盘面：\n" << board.toString(false) << "\n";
+    std::cout << "当前盘面：\n" << board.toString(false, true) << "\n";  // 使用颜色
     std::cout << "输入格式：行号 列号（用空格分隔），例如：0 1\n";
     std::cout << "已选数量：" << 0 << "/" << aValue << "\n\n";
 
@@ -246,7 +255,7 @@ void Game::selectInitialCodes() {
 
     board.selectInitialCodes(selectedPositions);
     std::cout << "\n初始操纵代码选择完成！游戏开始！\n";
-    std::cout << board.toString(true) << "\n";
+    std::cout << board.toString(true, true) << "\n";
     pauseAndWait();
 }
 
@@ -256,18 +265,16 @@ void Game::runGameLoop() {
     while (!board.isGameOver()) {
         clearScreen();
 
-        // 使用 stringstream 收集所有输出，一次性输出
-        std::ostringstream oss;
-
-        oss << "\n=== 密阵突围 ===\n";
-        oss << "玩家：" << playerName << " | a=" << board.getA()
+        std::cout << "\n=== 密阵突围 ===\n";
+        std::cout << "玩家：" << playerName << " | a=" << board.getA()
             << " | 盘面：" << board.getSize() << "x" << board.getSize()
             << " | 得分：" << board.getMergeCount()
             << " | 操作次数：" << board.getTotalMoves() << "\n\n";
-        oss << board.toString(true);
-        oss << "\n操作：W=上  S=下  A=左  D=右  Q=退出游戏\n";
 
-        std::cout << oss.str();  // 一次性输出
+        // 使用颜色显示
+        std::cout << board.toString(true, true);
+
+        std::cout << "\n操作：W=上  S=下  A=左  D=右  Q=退出游戏\n";
 
         if (!processInput()) break;
     }
@@ -275,7 +282,7 @@ void Game::runGameLoop() {
     if (board.isGameOver()) {
         clearScreen();
         std::cout << "\n=== 游戏结束 ===\n";
-        std::cout << board.toString(false);
+        std::cout << board.toString(true, true);  // 最终盘面也使用颜色
         showGameOver();
     }
 }
@@ -329,7 +336,7 @@ void Game::showGameOver() {
     time_t endTime = std::time(nullptr);
     int elapsedSeconds = static_cast<int>(endTime - gameStartTime);
     if (elapsedSeconds < 0) elapsedSeconds = 0;
-
+    
     ScoreRecord record;
     record.playerName = playerName;
     record.aValue = board.getA();
@@ -462,11 +469,12 @@ void Game::playReplay(int replayIndex) {
 
     clearScreen();
     std::cout << "\n=== 正在回放：" << rec->playerName
-              << " (a=" << rec->aValue << ") ===\n\n";
+        << " (a=" << rec->aValue << ") ===\n\n";
 
     try {
         board.initBoardFromData(rec->aValue, rec->initialBoard);
-    } catch (const std::exception& e) {
+    }
+    catch (const std::exception& e) {
         std::cout << "回放初始化失败：" << e.what() << "\n";
         std::cin.get();
         return;
@@ -475,7 +483,8 @@ void Game::playReplay(int replayIndex) {
     board.selectInitialCodes(rec->initialCodes);
 
     std::cout << "初始盘面：\n";
-    std::cout << board.toString(true);
+    // 回放也使用颜色
+    std::cout << board.toString(true, true);
     std::cout << "\n按回车键开始逐步回放...\n";
     pauseAndWait();
 
@@ -485,10 +494,11 @@ void Game::playReplay(int replayIndex) {
         std::cout << step.toString() << "\n\n";
 
         board.move(step.direction);
-        std::cout << board.toString(true);
+        // 回放也使用颜色
+        std::cout << board.toString(true, true);
 
         std::cout << "\n步骤 " << step.stepNumber << "/" << rec->steps.size()
-                  << " | 得分：" << board.getMergeCount() << "\n";
+            << " | 得分：" << board.getMergeCount() << "\n";
         std::cout << "按回车键继续下一步...";
         std::cin.get();
     }
@@ -496,9 +506,9 @@ void Game::playReplay(int replayIndex) {
     clearScreen();
     std::cout << "\n=== 回放结束 ===\n";
     std::cout << "最终盘面：\n";
-    std::cout << board.toString(false);
+    // 最终盘面也使用颜色
+    std::cout << board.toString(true, true);
     std::cout << "最终得分：" << board.getMergeCount() << "\n";
     std::cout << "总步数：" << rec->steps.size() << "\n";
     pauseAndWait();
-    
 }

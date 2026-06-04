@@ -9,6 +9,20 @@
 #include <stdexcept>
 #include <set>
 
+#ifdef _WIN32
+#include <windows.h>
+
+void setConsoleColor(WORD color) {
+    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+    SetConsoleTextAttribute(hConsole, color);
+}
+
+void resetConsoleColor() {
+    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+    SetConsoleTextAttribute(hConsole, 7);
+}
+#endif
+
 // ==================== 构造与初始化 ====================
 
 GameBoard::GameBoard()
@@ -412,9 +426,10 @@ int GameBoard::findControlledCodeIndex(const Position& pos) const {
 
 // ==================== 显示与导出 ====================
 
-std::string GameBoard::toString(bool highlightControlled) const {
+std::string GameBoard::toString(bool highlightControlled, bool useColor) const {
     std::ostringstream oss;
 
+    // 输出列号
     oss << "    ";
     for (int c = 0; c < size; ++c) {
         oss << "  " << (c < 10 ? " " : "") << c << "   ";
@@ -427,11 +442,14 @@ std::string GameBoard::toString(bool highlightControlled) const {
 
     for (int r = 0; r < size; ++r) {
         oss << " " << (r < 10 ? " " : "") << r << " |";
+
         for (int c = 0; c < size; ++c) {
             const Grid& g = board[r][c];
+
             if (g.isEmpty) {
                 oss << " [  ] |";
-            } else {
+            }
+            else {
                 bool isCtrl = false;
                 if (highlightControlled) {
                     for (const auto& ctrl : controlledCodes) {
@@ -441,9 +459,15 @@ std::string GameBoard::toString(bool highlightControlled) const {
                         }
                     }
                 }
-                if (isCtrl) {
+
+                if (isCtrl && useColor) {
+                    // 使用 ANSI 颜色码（支持跨平台）
+                    oss << "\033[32m *" << g.letter << g.number << "* \033[0m|";
+                }
+                else if (isCtrl) {
                     oss << " *" << g.letter << g.number << "* |";
-                } else {
+                }
+                else {
                     oss << " [" << g.letter << g.number << "] |";
                 }
             }
@@ -454,7 +478,8 @@ std::string GameBoard::toString(bool highlightControlled) const {
         oss << "\n";
     }
 
-    oss << "\n图例：*X#* = 操纵代码，[X#] = 普通代码，[  ] = 空格\n";
+    oss << "\n图例：" << (useColor ? "\033[32m*X#*\033[0m" : "*X#*")
+        << " = 操纵代码，[X#] = 普通代码，[  ] = 空格\n";
     oss << "操纵代码数量：" << controlledCodes.size() << "\n";
 
     return oss.str();
